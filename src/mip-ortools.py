@@ -93,9 +93,6 @@ NUMBER_FAMILIES = 5000
 COST_PER_FAMILY = [0, 50, 50, 100, 200, 200, 300, 300, 400, 500]
 COST_PER_FAMILY_MEMBER = [0, 0, 9, 9, 9, 18, 18, 36, 36, 235]
 
-# TODO: modify this
-MAX_BEST_CHOICE = 5
-
 # preference
 data = pd.read_csv("../input/santa-workshop-tour-2019/family_data.csv")
 columns = data.columns[1:11]
@@ -104,7 +101,7 @@ N_PEOPLE = data["n_people"].values
 print("preference data read")
 
 # assignment
-submission = pd.read_csv("../input/santa-workshop-tour-2019/submission.csv")
+submission = pd.read_csv("../input/santa-workshop-tour-2019/sample_submission.csv")
 assigned_days = submission["assigned_day"].values
 print("assignment data read")
 
@@ -122,7 +119,7 @@ solver = pywraplp.Solver(
 
 PCOSTM, B = {}, {}
 for fid in range(NUMBER_FAMILIES):
-    for i in range(MAX_BEST_CHOICE):
+    for i in range(10):
         PCOSTM[fid, DESIRED[fid][i] - 1] = (
             COST_PER_FAMILY[i] + N_PEOPLE[fid] * COST_PER_FAMILY_MEMBER[i]
         )
@@ -134,7 +131,7 @@ print("B initialized")
 # sum_i assign[i][j] \in [125, 300]
 
 for fid in range(NUMBER_FAMILIES):
-    solver.Add(solver.Sum([B[fid, j - 1] for j in DESIRED[fid][:MAX_BEST_CHOICE]]) == 1)
+    solver.Add(solver.Sum([B[fid, j - 1] for j in DESIRED[fid]]) == 1)
 
 for day in range(NUMBER_DAYS):
     solver.Add(
@@ -142,7 +139,7 @@ for day in range(NUMBER_DAYS):
             [
                 B[fid, day]
                 for fid in range(NUMBER_FAMILIES)
-                if day + 1 in DESIRED[fid][:MAX_BEST_CHOICE]
+                if day + 1 in DESIRED[fid]
             ]
         )
         >= 125
@@ -152,7 +149,7 @@ for day in range(NUMBER_DAYS):
             [
                 B[fid, day]
                 for fid in range(NUMBER_FAMILIES)
-                if day + 1 in DESIRED[fid][:MAX_BEST_CHOICE]
+                if day + 1 in DESIRED[fid]
             ]
         )
         <= 300
@@ -193,7 +190,7 @@ for i in range(NUMBER_DAYS):
             [
                 B[k, i]
                 for k in range(NUMBER_FAMILIES)
-                if i + 1 in DESIRED[k][:MAX_BEST_CHOICE]
+                if i + 1 in DESIRED[k]
             ]
         )
     )
@@ -275,7 +272,7 @@ solver.Minimize(
 print("objective function initialized")
 
 # meta data of the solver
-NUM_SECONDS = 60
+NUM_SECONDS = 3600
 NUM_THREADS = 1
 solver.set_time_limit(NUM_SECONDS * NUM_THREADS * 1000)
 print("solver set")
