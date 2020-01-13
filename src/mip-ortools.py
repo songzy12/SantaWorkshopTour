@@ -90,8 +90,8 @@ def cost_function(prediction):
 
 NUMBER_DAYS = 100
 NUMBER_FAMILIES = 5000
-COST_PER_FAMILY = [0, 50, 50, 100, 200, 200, 300, 300, 400, 500]
-COST_PER_FAMILY_MEMBER = [0, 0, 9, 9, 9, 18, 18, 36, 36, 235]
+COST_PER_FAMILY = [0, 50, 50, 100, 200, 200, 300, 300, 400, 500, 500]
+COST_PER_FAMILY_MEMBER = [0, 0, 9, 9, 9, 18, 18, 36, 36, 235, 434]
 
 # preference
 data = pd.read_csv("../input/santa-workshop-tour-2019/family_data.csv")
@@ -119,11 +119,15 @@ solver = pywraplp.Solver(
 
 PCOSTM, B = {}, {}
 for fid in range(NUMBER_FAMILIES):
+    for i in range(NUMBER_DAYS):
+        B[fid, i] = solver.BoolVar("")
+        PCOSTM[fid, i] = (
+            COST_PER_FAMILY[-1] + N_PEOPLE[fid] * COST_PER_FAMILY_MEMBER[-1]
+        )
     for i in range(10):
         PCOSTM[fid, DESIRED[fid][i] - 1] = (
             COST_PER_FAMILY[i] + N_PEOPLE[fid] * COST_PER_FAMILY_MEMBER[i]
         )
-        B[fid, DESIRED[fid][i] - 1] = solver.BoolVar("")
 print("B initialized")
 
 # constraint:
@@ -131,15 +135,14 @@ print("B initialized")
 # sum_i assign[i][j] \in [125, 300]
 
 for fid in range(NUMBER_FAMILIES):
-    solver.Add(solver.Sum([B[fid, j - 1] for j in DESIRED[fid]]) == 1)
+    solver.Add(solver.Sum([B[fid, j] for j in range(NUMBER_DAYS)]) == 1)
 
 for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                B[fid, day]
-                for fid in range(NUMBER_FAMILIES)
-                if day + 1 in DESIRED[fid]
+                sum([B[fid, day] for fid in range(NUMBER_FAMILIES)])
+                for day in range(NUMBER_DAYS)
             ]
         )
         >= 125
@@ -147,9 +150,8 @@ for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                B[fid, day]
-                for fid in range(NUMBER_FAMILIES)
-                if day + 1 in DESIRED[fid]
+                sum([B[fid, day] for fid in range(NUMBER_FAMILIES)])
+                for day in range(NUMBER_DAYS)
             ]
         )
         <= 300
@@ -187,11 +189,7 @@ for i in range(NUMBER_DAYS):
             ]
         )
         == solver.Sum(
-            [
-                B[k, i]
-                for k in range(NUMBER_FAMILIES)
-                if i + 1 in DESIRED[k]
-            ]
+            [sum([B[k, i] for k in range(NUMBER_FAMILIES)]) for i in range(NUMBER_DAYS)]
         )
     )
 print("daily occupancy constraints added")
@@ -272,9 +270,13 @@ solver.Minimize(
 print("objective function initialized")
 
 # meta data of the solver
+# https://www.kaggle.com/docs/kernels#technical-specifications
+# 9 hours execution time
+# 4 CPU cores, 16 Gigabytes of RAM
 NUM_SECONDS = 3600
 NUM_THREADS = 1
 solver.set_time_limit(NUM_SECONDS * NUM_THREADS * 1000)
+solver.SetNumThreads(NUM_THREADS)
 print("solver set")
 
 # solve
