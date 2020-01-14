@@ -241,9 +241,9 @@ solver.Minimize(
     solver.Sum([PCOSTM[fid, day] * B[fid, day] for fid, day in B])
     + solver.Sum(
         [
-            sum(
+            solver.Sum(
                 [
-                    sum(
+                    solver.Sum(
                         [
                             account[i, j, k] * compute_accounting_cost(j, k)
                             for i in range(NUMBER_DAYS - 1)
@@ -257,7 +257,7 @@ solver.Minimize(
     )
     + solver.Sum(
         [
-            daily_occupancy_[99, k] * compute_accounting_cost(k, k)
+            daily_occupancy_[NUMBER_DAYS - 1, k] * compute_accounting_cost(k, k)
             for k in range(MIN_OCCUPANCY, MAX_OCCUPANCY + 1)
         ]
     )
