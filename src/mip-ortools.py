@@ -141,8 +141,7 @@ for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                sum([B[fid, day] for fid in range(NUMBER_FAMILIES)])
-                for day in range(NUMBER_DAYS)
+                B[fid, day] for fid in range(NUMBER_FAMILIES)
             ]
         )
         >= 125
@@ -150,8 +149,7 @@ for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                sum([B[fid, day] for fid in range(NUMBER_FAMILIES)])
-                for day in range(NUMBER_DAYS)
+                B[fid, day] for fid in range(NUMBER_FAMILIES)
             ]
         )
         <= 300
@@ -189,7 +187,7 @@ for i in range(NUMBER_DAYS):
             ]
         )
         == solver.Sum(
-            [sum([B[k, i] for k in range(NUMBER_FAMILIES)]) for i in range(NUMBER_DAYS)]
+            [B[k, i] for k in range(NUMBER_FAMILIES)]
         )
     )
 print("daily occupancy constraints added")
