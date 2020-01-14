@@ -227,16 +227,13 @@ def compute_accounting_cost(today_count, yesterday_count):
 for i in range(NUMBER_DAYS - 1):
     for j in range(MIN_OCCUPANCY, MAX_OCCUPANCY + 1):
         for k in range(MIN_OCCUPANCY, MAX_OCCUPANCY + 1):
-            if compute_accounting_cost(j, k) > optimal:
-                account[i, j, k] = 0
-            else:
-                account[i, j, k] = solver.BoolVar("")
+            account[i, j, k] = solver.BoolVar("")
             solver.Add(
                 account[i, j, k]
-                <= daily_occupancy_[i, j] + daily_occupancy_[i + 1, k] - 1
+                >= daily_occupancy_[i, j] + daily_occupancy_[i + 1, k] - 1
             )
-            solver.Add(account[i, j, k] >= daily_occupancy_[i, j])
-            solver.Add(account[i, j, k] >= daily_occupancy_[i + 1, k])
+            solver.Add(account[i, j, k] <= daily_occupancy_[i, j])
+            solver.Add(account[i, j, k] <= daily_occupancy_[i + 1, k])
 print("account initialized and constraints added")
 
 # object
