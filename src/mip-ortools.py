@@ -141,7 +141,7 @@ for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                B[fid, day] for fid in range(NUMBER_FAMILIES)
+                B[fid, day] * N_PEOPLE[fid] for fid in range(NUMBER_FAMILIES)
             ]
         )
         >= 125
@@ -149,7 +149,7 @@ for day in range(NUMBER_DAYS):
     solver.Add(
         solver.Sum(
             [
-                B[fid, day] for fid in range(NUMBER_FAMILIES)
+                B[fid, day] * N_PEOPLE[fid] for fid in range(NUMBER_FAMILIES)
             ]
         )
         <= 300
